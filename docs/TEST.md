@@ -34,7 +34,7 @@ git diff --check
 ## 当前结果
 
 - Black、Ruff、严格 MyPy、JavaScript 语法和 Git 空白检查：通过。
-- Pytest：12 项通过，0 项失败；存在 1 条来自 FastAPI/Starlette TestClient 的上游
+- Pytest：13 项通过，0 项失败；存在 1 条来自 FastAPI/Starlette TestClient 的上游
   弃用警告，不影响运行路径。
 - PostgreSQL 17：`0001_initial` 升级成功；`alembic check` 无 schema 漂移。
 - Docker 镜像：使用哈希锁定依赖构建成功；容器 `/health/ready` 返回 200。
@@ -42,11 +42,13 @@ git diff --check
 - 最新真实统计：第 `2026226` 期、特码 `17`、生肖虎；有效转移样本 22、平码计数
   132。前六名依次为馬 16、虎 13、狗 13、牛 12、雞 12、鼠 11。
 - 浏览器视觉检查：桌面与 390×844 窄屏登录页布局正常，控制台 0 条 warning/error。
-- 真实 OpenAI 请求：未执行，符合“未经另行授权不产生付费调用”的边界。
+- 真实 DeepSeek 请求：经用户单独授权后执行 1 次；`deepseek-v4-flash` 在关闭思考
+  模式后成功返回有效 JSON，摘要 91 字、观察项 6 条，未执行第二次付费验证。
 - 生产回填：首次插入 226，第二次插入 0、跳过 226；生产计算结果与本地一致。
 - 生产登录 smoke：管理员角色、首次改密标记、Secure/HttpOnly Cookie 和退出均通过；
   未替用户提交首次密码修改。
 - 公网：`/health/ready` 返回 200，新登录页返回 200，匿名
   `/api/v1/analysis/latest` 返回 401；线上浏览器控制台 0 条 warning/error。
+- 线上导航：AI 解读、生肖分析、开奖数据顺序正确，AI 解读为独立页面。
 - 切换后：新 API 健康、新 Scheduler 正常等待 21:35；旧 API/Worker/Scheduler
   退出码 0，旧 PostgreSQL、Redis、Caddy 与旧卷继续保留。
