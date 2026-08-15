@@ -17,14 +17,6 @@ x-app-environment: &app-environment
   LAOLIULIU_HISTORY_SOURCE_URL: https://api.00853lhc.com/api/HistoryOpenInfo
   LAOLIULIU_LOTTERY_ID: "2032"
 
-x-app-secrets: &app-secrets
-  - source: database_url
-    target: LAOLIULIU_DATABASE_URL
-  - source: session_pepper
-    target: LAOLIULIU_SESSION_PEPPER
-  - source: ai_encryption_key
-    target: LAOLIULIU_AI_ENCRYPTION_KEY
-
 services:
   postgres:
     image: postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
@@ -46,14 +38,43 @@ services:
     networks:
       - backend
 
+  init-runtime-secrets:
+    <<: *app-image
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        install -d -m 0700 -o laoliuliu -g laoliuliu /run/runtime-secrets
+        for secret_name in LAOLIULIU_DATABASE_URL LAOLIULIU_SESSION_PEPPER LAOLIULIU_AI_ENCRYPTION_KEY; do
+          install -m 0400 -o laoliuliu -g laoliuliu "/run/source-secrets/$${secret_name}" "/run/runtime-secrets/$${secret_name}"
+        done
+    secrets:
+      - source: database_url
+        target: LAOLIULIU_DATABASE_URL
+      - source: session_pepper
+        target: LAOLIULIU_SESSION_PEPPER
+      - source: ai_encryption_key
+        target: LAOLIULIU_AI_ENCRYPTION_KEY
+    volumes:
+      - runtime_secrets:/run/runtime-secrets
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+
   migrate:
     <<: *app-image
     restart: "no"
     environment: *app-environment
-    secrets: *app-secrets
     depends_on:
+      init-runtime-secrets:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
+    volumes:
+      - runtime_secrets:/run/secrets:ro
     command: ["alembic", "upgrade", "head"]
     read_only: true
     tmpfs:
@@ -67,10 +88,11 @@ services:
     <<: *app-image
     restart: unless-stopped
     environment: *app-environment
-    secrets: *app-secrets
     depends_on:
       migrate:
         condition: service_completed_successfully
+    volumes:
+      - runtime_secrets:/run/secrets:ro
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=32m
@@ -101,10 +123,11 @@ services:
     <<: *app-image
     restart: unless-stopped
     environment: *app-environment
-    secrets: *app-secrets
     depends_on:
       migrate:
         condition: service_completed_successfully
+    volumes:
+      - runtime_secrets:/run/secrets:ro
     command: ["python", "-m", "laoliuliu.scheduler"]
     read_only: true
     tmpfs:
@@ -121,12 +144,12 @@ services:
     user: "0:0"
     restart: "no"
     environment: *app-environment
-    secrets: *app-secrets
     depends_on:
       migrate:
         condition: service_completed_successfully
     entrypoint: ["python", "-m", "laoliuliu.cli"]
     volumes:
+      - runtime_secrets:/run/secrets:ro
       - ./deploy/credentials:/run/credentials
     read_only: true
     tmpfs:
@@ -149,6 +172,7 @@ secrets:
 
 volumes:
   postgres_data:
+  runtime_secrets:
 
 networks:
   backend:

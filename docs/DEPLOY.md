@@ -16,7 +16,8 @@
   `lhc-analysis-production_backend` 网络；现有 Caddy 只更换反向代理目标，继续复用
   已验证的域名、证书和 80/443 入口。
 - 数据库密码、数据库 URL、Session pepper 和 Fernet Key 使用宿主机 `0600` 文件与
-  Docker Secrets 挂载，不写入 Compose、镜像或 Git。
+  Docker Secrets，不写入 Compose、镜像或 Git。一次性 root 初始化容器只把应用所需
+  三项复制到专用卷并设为 API 用户 `0400`；API、Scheduler 和迁移容器只读挂载该卷。
 - 管理员一次性凭据写入 `deploy/credentials/`，该目录不进入 Git。
 
 ## 发布门禁
