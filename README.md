@@ -97,4 +97,5 @@ git diff --check
 详细设计见 [docs/PRD.md](docs/PRD.md)、[docs/SYSTEM.md](docs/SYSTEM.md)、
 [docs/DATABASE.md](docs/DATABASE.md)、[docs/API.md](docs/API.md)、
 [docs/UI.md](docs/UI.md)、[docs/DEPLOY.md](docs/DEPLOY.md) 和
-[docs/TEST.md](docs/TEST.md)。
+[docs/TEST.md](docs/TEST.md)。首次生产发布实录见
+[docs/RELEASE.md](docs/RELEASE.md)。
