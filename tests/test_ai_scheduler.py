@@ -14,7 +14,7 @@ from laoliuliu.ai import (
     validate_ai_result,
     validate_provider_base_url,
 )
-from laoliuliu.analysis import TransitionAnalysis
+from laoliuliu.analysis import RankedNumber, RankedZodiac, TransitionAnalysis
 from laoliuliu.config import Settings
 from laoliuliu.errors import AiServiceError
 from laoliuliu.scheduler import seconds_until_next_run
@@ -66,7 +66,15 @@ def test_deepseek_requests_disable_thinking_by_default() -> None:
         sample_count=1,
         total_regular_occurrences=6,
         matched_transitions=(("2026200", "2026201"),),
-        ranking=(),
+        ranking=(
+            RankedZodiac(
+                rank=1,
+                zodiac=ZodiacAnimal.TIGER,
+                occurrences=6,
+                frequency=1.0,
+                number_occurrences=(RankedNumber(number=17, occurrences=2),),
+            ),
+        ),
     )
     result = request_ai_explanation(
         AiProviderConfig(
@@ -81,6 +89,9 @@ def test_deepseek_requests_disable_thinking_by_default() -> None:
     )
 
     assert captured_payload["thinking"] == {"type": "disabled"}
+    user_payload = json.loads(captured_payload["messages"][1]["content"])  # type: ignore[index]
+    first_ranking = user_payload["deterministic_result"]["ranking"][0]
+    assert "number_occurrences" not in first_ranking
     assert result == {"summary": "统计摘要", "observations": ["观察项"]}
 
 

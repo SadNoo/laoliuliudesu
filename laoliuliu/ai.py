@@ -56,7 +56,7 @@ def request_ai_explanation(
 
     normalized_base_url = validate_provider_base_url(provider.base_url)
     endpoint = f"{normalized_base_url}/chat/completions"
-    source_result = analysis.to_dict()
+    source_result = analysis.to_dict(include_number_breakdown=False)
     system_prompt = (
         "你是历史开奖数据解释助手。只解释后端已经计算完成的2026年生肖条件频率。"
         "不得改变排名、补造样本、输出具体号码、声称能够保证命中，或引用其他分析方法。"

@@ -16,7 +16,11 @@ from laoliuliu.ai import (
     request_ai_explanation,
     validate_provider_base_url,
 )
-from laoliuliu.analysis import calculate_latest_transition
+from laoliuliu.analysis import (
+    calculate_latest_transition,
+    calculate_transition_for_issue,
+    list_historical_analysis_issues,
+)
 from laoliuliu.auth import (
     SESSION_COOKIE_NAME,
     AuthContext,
@@ -217,6 +221,22 @@ def list_draws(
 def latest_analysis(request: Request, db: Db, context: CurrentContext) -> JSONResponse:
     require_ready(context)
     return _success(calculate_latest_transition(db).to_dict(), request)
+
+
+@API_ROUTER.get("/analysis/history/issues")
+def historical_analysis_issues(
+    request: Request, db: Db, context: CurrentContext
+) -> JSONResponse:
+    require_ready(context)
+    return _success({"items": list_historical_analysis_issues(db)}, request)
+
+
+@API_ROUTER.get("/analysis/history/{issue}")
+def historical_analysis(
+    issue: str, request: Request, db: Db, context: CurrentContext
+) -> JSONResponse:
+    require_ready(context)
+    return _success(calculate_transition_for_issue(db, issue).to_dict(), request)
 
 
 @API_ROUTER.post("/analysis/ai")

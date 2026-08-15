@@ -15,6 +15,17 @@ from laoliuliu.zodiac import ZodiacAnimal, zodiac_for_number
 
 
 @dataclass(frozen=True)
+class RankedNumber:
+    """One regular number occurrence count within a zodiac bucket."""
+
+    number: int
+    occurrences: int
+
+    def to_dict(self) -> dict[str, int]:
+        return {"number": self.number, "occurrences": self.occurrences}
+
+
+@dataclass(frozen=True)
 class RankedZodiac:
     """One zodiac count and empirical occurrence share."""
 
@@ -22,15 +33,21 @@ class RankedZodiac:
     zodiac: ZodiacAnimal
     occurrences: int
     frequency: float
+    number_occurrences: tuple[RankedNumber, ...]
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
+    def to_dict(self, *, include_number_breakdown: bool = True) -> dict[str, Any]:
+        result: dict[str, Any] = {
             "rank": self.rank,
             "zodiac": self.zodiac.value,
             "label": self.zodiac.label,
             "occurrences": self.occurrences,
             "frequency": self.frequency,
         }
+        if include_number_breakdown:
+            result["number_occurrences"] = [
+                item.to_dict() for item in self.number_occurrences
+            ]
+        return result
 
 
 @dataclass(frozen=True)
@@ -46,10 +63,13 @@ class TransitionAnalysis:
     matched_transitions: tuple[tuple[str, str], ...]
     ranking: tuple[RankedZodiac, ...]
 
-    def to_dict(self) -> dict[str, Any]:
-        ranking = [entry.to_dict() for entry in self.ranking]
+    def to_dict(self, *, include_number_breakdown: bool = True) -> dict[str, Any]:
+        ranking = [
+            entry.to_dict(include_number_breakdown=include_number_breakdown)
+            for entry in self.ranking
+        ]
         return {
-            "algorithm_version": "zodiac-transition-2026-v1",
+            "algorithm_version": "zodiac-transition-2026-v2",
             "data_year": 2026,
             "latest_issue": self.latest_issue,
             "latest_regular_numbers": list(self.latest_regular_numbers),
@@ -71,9 +91,62 @@ class TransitionAnalysis:
 def calculate_latest_transition(db: Session) -> TransitionAnalysis:
     """Rank next-draw regular zodiacs using the approved transition rule."""
 
-    records = list(
+    return _calculate_transition(_ordered_records(db))
+
+
+def calculate_transition_for_issue(db: Session, issue: str) -> TransitionAnalysis:
+    """Calculate one historical issue using only data available through that issue."""
+
+    return _calculate_transition(_ordered_records(db), target_issue=issue)
+
+
+def list_historical_analysis_issues(db: Session) -> list[dict[str, Any]]:
+    """List historical issues that have at least one valid transition sample."""
+
+    records = _ordered_records(db)
+    previously_seen: set[ZodiacAnimal] = set()
+    eligible: list[dict[str, Any]] = []
+    for index, record in enumerate(records[:-1]):
+        anchor = ZodiacAnimal(record.zodiac_anchor)
+        special_zodiac = zodiac_for_number(record.special_number, anchor)
+        if index > 0 and special_zodiac in previously_seen:
+            eligible.append(
+                {
+                    "issue": record.issue,
+                    "open_time": record.open_time.isoformat(),
+                    "special_number": record.special_number,
+                    "special_zodiac": special_zodiac.value,
+                    "special_zodiac_label": special_zodiac.label,
+                }
+            )
+        previously_seen.add(special_zodiac)
+    eligible.reverse()
+    return eligible
+
+
+def _ordered_records(db: Session) -> list[DrawRecord]:
+    return list(
         db.scalars(select(DrawRecord).order_by(DrawRecord.open_time, DrawRecord.issue))
     )
+
+
+def _calculate_transition(
+    records: list[DrawRecord], target_issue: str | None = None
+) -> TransitionAnalysis:
+    if target_issue is not None:
+        target_index = next(
+            (
+                index
+                for index, record in enumerate(records)
+                if record.issue == target_issue
+            ),
+            None,
+        )
+        if target_index is None:
+            raise AnalysisError(
+                "ANALYSIS_ISSUE_NOT_FOUND", "查询的2026年期号不存在", 404
+            )
+        records = records[: target_index + 1]
     if len(records) < 2:
         raise AnalysisError(
             "INSUFFICIENT_HISTORY", "至少需要两期2026年数据才能分析", 409
@@ -83,6 +156,9 @@ def calculate_latest_transition(db: Session) -> TransitionAnalysis:
     latest_anchor = ZodiacAnimal(latest.zodiac_anchor)
     current_special_zodiac = zodiac_for_number(latest.special_number, latest_anchor)
     counts: Counter[ZodiacAnimal] = Counter()
+    number_counts: dict[ZodiacAnimal, Counter[int]] = {
+        animal: Counter() for animal in ZodiacAnimal
+    }
     transitions: list[tuple[str, str]] = []
 
     for index, record in enumerate(records[:-1]):
@@ -94,10 +170,10 @@ def calculate_latest_transition(db: Session) -> TransitionAnalysis:
             continue
         following = records[index + 1]
         following_anchor = ZodiacAnimal(following.zodiac_anchor)
-        counts.update(
-            zodiac_for_number(number, following_anchor)
-            for number in following.regular_numbers
-        )
+        for number in following.regular_numbers:
+            animal = zodiac_for_number(number, following_anchor)
+            counts[animal] += 1
+            number_counts[animal][number] += 1
         transitions.append((record.issue, following.issue))
 
     if not transitions:
@@ -118,6 +194,13 @@ def calculate_latest_transition(db: Session) -> TransitionAnalysis:
             zodiac=animal,
             occurrences=counts[animal],
             frequency=round(counts[animal] / total, 6),
+            number_occurrences=tuple(
+                RankedNumber(number=number, occurrences=occurrences)
+                for number, occurrences in sorted(
+                    number_counts[animal].items(),
+                    key=lambda item: (-item[1], item[0]),
+                )
+            ),
         )
         for index, animal in enumerate(ordered, start=1)
     )
