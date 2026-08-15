@@ -230,12 +230,14 @@ button:disabled { cursor: not-allowed; opacity: 0.5; transform: none !important;
 .hero-metrics small, .metric-card small { color: #67748a; font-size: 0.64rem; }
 
 .top-six-grid { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap: 0.8rem; }
-.zodiac-card { position: relative; overflow: hidden; min-height: 158px; padding: 1.1rem; border: 1px solid var(--border); border-radius: 15px; background: linear-gradient(145deg, rgba(21, 30, 45, 0.96), rgba(10, 16, 26, 0.96)); }
+.zodiac-card { position: relative; overflow: hidden; min-height: 190px; padding: 1.1rem; border: 1px solid var(--border); border-radius: 15px; background: linear-gradient(145deg, rgba(21, 30, 45, 0.96), rgba(10, 16, 26, 0.96)); }
 .zodiac-card::after { content: ""; position: absolute; right: -35px; bottom: -35px; width: 90px; height: 90px; border-radius: 999px; background: var(--accent); opacity: 0.08; }
 .zodiac-card:first-child { border-color: rgba(255, 139, 73, 0.48); }
 .zodiac-card:first-child::after { background: var(--orange); opacity: 0.14; }
 .zodiac-rank { color: var(--muted); font-size: 0.66rem; font-weight: 800; letter-spacing: 0.12em; }
-.zodiac-name { display: block; margin: 0.65rem 0 0.8rem; font-family: Georgia, "STKaiti", serif; font-size: 2.35rem; }
+.zodiac-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.2rem; margin: 0.65rem 0 0.8rem; }
+.zodiac-name { font-family: Georgia, "STKaiti", serif; font-size: 2.1rem; }
+.zodiac-number-breakdown { position: relative; z-index: 1; color: #9edce4; font-size: 0.67rem; line-height: 1.65; overflow-wrap: anywhere; }
 .zodiac-data { color: #b9c5d5; font-size: 0.72rem; line-height: 1.6; }
 .zodiac-data strong { color: var(--text); font-size: 0.92rem; }
 .loading-grid { min-height: 158px; border-radius: 15px; background: linear-gradient(90deg, rgba(255,255,255,.02), rgba(255,255,255,.06), rgba(255,255,255,.02)); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; }
@@ -265,6 +267,11 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
 .row-button.danger { border-color: rgba(255, 101, 115, 0.28); color: #ff9ba5; }
 .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; padding: 1rem 1.2rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.72rem; }
 .empty-state { padding: 2rem 1rem; color: #748197; font-size: 0.76rem; text-align: center; }
+
+.history-query-form { display: grid; grid-template-columns: minmax(240px, 440px) auto; align-items: end; gap: 0.8rem; padding: 1.2rem 1.3rem 0; }
+.history-query-form .primary-button { min-height: 44px; }
+#historyView > .panel .form-message { padding: 0 1.3rem 0.8rem; }
+.history-result { display: grid; gap: 1.35rem; }
 
 .ai-panel { min-height: 340px; }
 .ai-summary { margin: 1.25rem 1.3rem 0; color: #d9e1ec; font-size: 0.86rem; line-height: 1.75; }
@@ -338,5 +345,6 @@ tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
   .hero-metrics { grid-template-columns: 1fr; }
   .panel-heading, .section-heading { align-items: flex-start; flex-direction: column; }
   .panel-heading button, .section-heading button { width: 100%; }
+  .history-query-form { grid-template-columns: 1fr; }
   th, td { padding: 0.75rem; }
 }

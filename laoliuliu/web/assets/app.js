@@ -14,6 +14,7 @@ const state = {
 const viewMeta = {
   ai: ["AI INTERPRETATION", "AI 数据解读"],
   analysis: ["TRANSITION FREQUENCY", "下一期平码生肖"],
+  history: ["HISTORICAL ANALYSIS", "历史分析查询"],
   draws: ["2026 DRAW RECORDS", "开奖数据"],
   users: ["USER AUTHORIZATION", "用户授权"],
   settings: ["DATA & AI SETTINGS", "数据与 AI"],
@@ -222,6 +223,7 @@ async function loadView(name) {
   try {
     if (name === "ai") await loadAi();
     if (name === "analysis") await loadAnalysis();
+    if (name === "history") await loadHistory();
     if (name === "draws") await loadDraws();
     if (name === "users") await loadUsers();
     if (name === "settings") await loadSettings();
@@ -263,28 +265,89 @@ function renderAnalysis(analysis) {
   byId("sampleCount").textContent = analysis.sample_count;
   byId("occurrenceTotal").textContent = analysis.total_regular_occurrences;
 
-  const grid = byId("topSixGrid");
+  renderRanking(analysis, "topSixGrid", "rankingTableBody");
+}
+
+function formatNumberOccurrences(entry) {
+  const items = entry.number_occurrences || [];
+  return `[${items.map((item) => `${item.number}（${item.occurrences}）`).join("，")}]`;
+}
+
+function renderRanking(analysis, gridId, tableBodyId) {
+  const grid = byId(gridId);
   clearChildren(grid);
   grid.classList.remove("loading-grid");
   analysis.top_six.forEach((entry) => {
     const card = document.createElement("article");
     card.className = "zodiac-card";
     const rank = document.createElement("span"); rank.className = "zodiac-rank"; rank.textContent = `RANK ${String(entry.rank).padStart(2, "0")}`;
+    const title = document.createElement("div"); title.className = "zodiac-title";
     const name = document.createElement("strong"); name.className = "zodiac-name"; name.textContent = entry.label;
+    const numbers = document.createElement("span"); numbers.className = "zodiac-number-breakdown"; numbers.textContent = formatNumberOccurrences(entry);
     const data = document.createElement("div"); data.className = "zodiac-data";
     const count = document.createElement("strong"); count.textContent = `${entry.occurrences} 次`;
     const frequency = document.createElement("span"); frequency.textContent = `历史频率 ${(entry.frequency * 100).toFixed(2)}%`;
-    data.append(count, frequency); card.append(rank, name, data); grid.appendChild(card);
+    title.append(name, numbers); data.append(count, frequency); card.append(rank, title, data); grid.appendChild(card);
   });
 
-  const body = byId("rankingTableBody");
+  const body = byId(tableBodyId);
   clearChildren(body);
   analysis.ranking.forEach((entry) => {
     const row = document.createElement("tr");
     const rankCell = document.createElement("td"); const badge = document.createElement("span"); badge.className = "rank-badge"; badge.textContent = entry.rank; rankCell.appendChild(badge);
-    row.append(rankCell, textCell(entry.label), textCell(`${entry.occurrences} 次`), textCell(`${(entry.frequency * 100).toFixed(2)}%`));
+    row.append(rankCell, textCell(entry.label), textCell(formatNumberOccurrences(entry)), textCell(`${entry.occurrences} 次`), textCell(`${(entry.frequency * 100).toFixed(2)}%`));
     body.appendChild(row);
   });
+}
+
+async function loadHistory() {
+  setMessage("historyMessage", "");
+  byId("historyResult").hidden = true;
+  byId("historyEmpty").hidden = false;
+  byId("historyEmpty").textContent = "正在读取可查询的历史期号…";
+  const data = await api("/analysis/history/issues");
+  const select = byId("historyIssueSelect");
+  clearChildren(select);
+  data.items.forEach((item) => {
+    const option = document.createElement("option");
+    option.value = item.issue;
+    option.textContent = `第 ${item.issue} 期 · 特码 ${String(item.special_number).padStart(2, "0")} · ${item.special_zodiac_label}`;
+    select.appendChild(option);
+  });
+  if (!data.items.length) {
+    byId("historyEmpty").textContent = "当前还没有具备有效转移样本的历史期号。";
+    byId("queryHistoryButton").disabled = true;
+    return;
+  }
+  byId("queryHistoryButton").disabled = false;
+  await queryHistoricalAnalysis();
+}
+
+async function queryHistoricalAnalysis(event) {
+  if (event) event.preventDefault();
+  const button = byId("queryHistoryButton");
+  const issue = byId("historyIssueSelect").value;
+  if (!issue) return;
+  setBusy(button, true, "查询中…");
+  setMessage("historyMessage", "");
+  try {
+    const analysis = await api(`/analysis/history/${encodeURIComponent(issue)}`);
+    byId("historyIssue").textContent = analysis.latest_issue;
+    byId("historySpecial").textContent = String(analysis.latest_special_number).padStart(2, "0");
+    byId("historyZodiac").textContent = analysis.latest_special_zodiac_label;
+    byId("historySampleCount").textContent = analysis.sample_count;
+    byId("historyOccurrenceTotal").textContent = analysis.total_regular_occurrences;
+    renderRanking(analysis, "historyTopSixGrid", "historyRankingTableBody");
+    byId("historyEmpty").hidden = true;
+    byId("historyResult").hidden = false;
+  } catch (error) {
+    byId("historyResult").hidden = true;
+    byId("historyEmpty").hidden = false;
+    byId("historyEmpty").textContent = "该期暂时无法生成历史分析。";
+    setMessage("historyMessage", describeError(error), "error");
+  } finally {
+    setBusy(button, false, "");
+  }
 }
 
 function renderAnalysisRuns(items) {
@@ -440,6 +503,7 @@ function bindEvents() {
   document.querySelectorAll(".nav-button").forEach((button) => button.addEventListener("click", () => loadView(button.dataset.view)));
   byId("menuButton").addEventListener("click", () => byId("appView").classList.toggle("menu-open"));
   byId("refreshAnalysisButton").addEventListener("click", loadAnalysis);
+  byId("historyAnalysisForm").addEventListener("submit", queryHistoricalAnalysis);
   byId("runAiButton").addEventListener("click", runAi);
   byId("drawsPrevious").addEventListener("click", async () => { if (state.drawPage > 1) { state.drawPage -= 1; await loadDraws(); } });
   byId("drawsNext").addEventListener("click", async () => { state.drawPage += 1; await loadDraws(); });

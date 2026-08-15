@@ -57,6 +57,7 @@
       <nav aria-label="主要功能">
         <button class="nav-button" type="button" data-view="ai"><span class="nav-icon">AI</span><span>AI 解读</span></button>
         <button class="nav-button active" type="button" data-view="analysis"><span class="nav-icon">析</span><span>生肖分析</span></button>
+        <button class="nav-button" type="button" data-view="history"><span class="nav-icon">史</span><span>历史分析</span></button>
         <button class="nav-button" type="button" data-view="draws"><span class="nav-icon">期</span><span>开奖数据</span></button>
         <div id="adminNavigation" hidden>
           <div class="nav-divider"></div>
@@ -99,7 +100,7 @@
           <section class="panel">
             <div class="panel-heading"><div><h2>完整频率排名</h2><p>频率分母为有效样本数 × 6 个平码。</p></div></div>
             <div class="table-wrap">
-              <table><thead><tr><th>排名</th><th>生肖</th><th>出现次数</th><th>历史频率</th></tr></thead><tbody id="rankingTableBody"></tbody></table>
+              <table><thead><tr><th>排名</th><th>生肖</th><th>号码出现次数</th><th>出现次数</th><th>历史频率</th></tr></thead><tbody id="rankingTableBody"></tbody></table>
             </div>
           </section>
           <p class="disclaimer">结果仅表示 2026 年历史条件频率，不保证未来开奖。</p>
@@ -121,6 +122,45 @@
             <div id="analysisRuns" class="run-list"><div class="empty-state">暂无记录。</div></div>
           </section>
           <p class="disclaimer">AI 内容只用于解释 2026 年历史统计，不保证未来开奖。</p>
+        </section>
+
+        <section id="historyView" class="resource-view" hidden>
+          <section class="panel">
+            <div class="panel-heading"><div><h2>查询历史分析</h2><p>只使用所选期号及此前已经开奖的数据，不引用之后的结果。</p></div></div>
+            <form id="historyAnalysisForm" class="history-query-form">
+              <label for="historyIssueSelect">历史期号
+                <select id="historyIssueSelect" required></select>
+              </label>
+              <button id="queryHistoryButton" type="submit" class="primary-button">查询分析</button>
+            </form>
+            <div id="historyMessage" class="form-message" role="status"></div>
+          </section>
+
+          <div id="historyEmpty" class="empty-state">正在读取可查询的历史期号…</div>
+          <div id="historyResult" class="history-result" hidden>
+            <div class="analysis-hero panel">
+              <div>
+                <p class="eyebrow">HISTORICAL CONDITION</p>
+                <h2>第 <span id="historyIssue">—</span> 期</h2>
+                <p class="hero-copy">特码 <strong id="historySpecial">—</strong> · 生肖 <strong id="historyZodiac">—</strong></p>
+              </div>
+              <div class="hero-metrics">
+                <article><span>当时有效样本</span><strong id="historySampleCount">—</strong><small>不使用所选期号之后的数据</small></article>
+                <article><span>平码计数总量</span><strong id="historyOccurrenceTotal">—</strong><small>每次出现分别累计</small></article>
+              </div>
+            </div>
+
+            <div class="section-heading"><div><p class="eyebrow">HISTORICAL TOP SIX</p><h2>该期参考生肖</h2><p>生肖及其历史号码次数均按当时可用数据计算。</p></div></div>
+            <div id="historyTopSixGrid" class="top-six-grid"></div>
+
+            <section class="panel">
+              <div class="panel-heading"><div><h2>该期完整频率排名</h2><p>频率分母为当时有效样本数 × 6 个平码。</p></div></div>
+              <div class="table-wrap">
+                <table><thead><tr><th>排名</th><th>生肖</th><th>号码出现次数</th><th>出现次数</th><th>历史频率</th></tr></thead><tbody id="historyRankingTableBody"></tbody></table>
+              </div>
+            </section>
+            <p class="disclaimer">历史分析严格按所选期号的数据截止点重算，不代表未来结果。</p>
+          </div>
         </section>
 
         <section id="drawsView" class="resource-view" hidden>

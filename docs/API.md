@@ -15,11 +15,16 @@
 - `POST /api/v1/auth/logout`
 - `GET /api/v1/draws?page=1&page_size=30`
 - `GET /api/v1/analysis/latest`
+- `GET /api/v1/analysis/history/issues`：返回可查询的历史期号。
+- `GET /api/v1/analysis/history/{issue}`：按该期数据截止点重算确定性分析。
 - `POST /api/v1/analysis/ai`
 - `GET /api/v1/analysis/runs`
 
 除登录和只读 GET 外，写接口必须带 `X-CSRF-Token`。业务会话通过 HttpOnly Cookie
 传递，不返回给 JavaScript。
+
+分析排名条目包含 `number_occurrences`，其元素为 `number` 与 `occurrences`；列表按
+次数降序、相同次数按号码升序排列。
 
 ## 管理员接口
 
