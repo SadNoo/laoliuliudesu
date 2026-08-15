@@ -46,7 +46,7 @@ services:
       - |
         install -d -m 0700 -o laoliuliu -g laoliuliu /run/runtime-secrets
         for secret_name in LAOLIULIU_DATABASE_URL LAOLIULIU_SESSION_PEPPER LAOLIULIU_AI_ENCRYPTION_KEY; do
-          install -m 0400 -o laoliuliu -g laoliuliu "/run/source-secrets/$${secret_name}" "/run/runtime-secrets/$${secret_name}"
+          install -m 0400 -o laoliuliu -g laoliuliu "/run/secrets/$${secret_name}" "/run/runtime-secrets/$${secret_name}"
         done
     secrets:
       - source: database_url
