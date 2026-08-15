@@ -1,0 +1,159 @@
+name: ${COMPOSE_PROJECT_NAME:-laoliuliu-production}
+
+x-app-image: &app-image
+  image: laoliuliu-api:${LAOLIULIU_IMAGE_TAG:-local}
+  build:
+    context: .
+    dockerfile: Dockerfile
+
+x-app-environment: &app-environment
+  LAOLIULIU_ENV: production
+  LAOLIULIU_SECRETS_DIR: /run/secrets
+  LAOLIULIU_SESSION_COOKIE_SECURE: "true"
+  LAOLIULIU_PUBLIC_ORIGIN: ${LAOLIULIU_PUBLIC_ORIGIN:?Set LAOLIULIU_PUBLIC_ORIGIN}
+  LAOLIULIU_TIMEZONE: Asia/Hong_Kong
+  LAOLIULIU_DATA_YEAR: "2026"
+  LAOLIULIU_SOURCE_URL: https://api.00853lhc.com/api/opencode/2032
+  LAOLIULIU_HISTORY_SOURCE_URL: https://api.00853lhc.com/api/HistoryOpenInfo
+  LAOLIULIU_LOTTERY_ID: "2032"
+
+x-app-secrets: &app-secrets
+  - source: database_url
+    target: LAOLIULIU_DATABASE_URL
+  - source: session_pepper
+    target: LAOLIULIU_SESSION_PEPPER
+  - source: ai_encryption_key
+    target: LAOLIULIU_AI_ENCRYPTION_KEY
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: laoliuliu
+      POSTGRES_USER: laoliuliu
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laoliuliu -d laoliuliu"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    networks:
+      - backend
+
+  migrate:
+    <<: *app-image
+    restart: "no"
+    environment: *app-environment
+    secrets: *app-secrets
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - backend
+
+  api:
+    <<: *app-image
+    restart: unless-stopped
+    environment: *app-environment
+    secrets: *app-secrets
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import json,urllib.request;
+          response=urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=3);
+          payload=json.load(response);
+          assert response.status == 200 and payload['status'] == 'ready'
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      backend:
+      egress:
+      proxy:
+        aliases:
+          - laoliuliu-api
+
+  scheduler:
+    <<: *app-image
+    restart: unless-stopped
+    environment: *app-environment
+    secrets: *app-secrets
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["python", "-m", "laoliuliu.scheduler"]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - backend
+      - egress
+
+  admin:
+    <<: *app-image
+    profiles: ["tools"]
+    user: "0:0"
+    restart: "no"
+    environment: *app-environment
+    secrets: *app-secrets
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    entrypoint: ["python", "-m", "laoliuliu.cli"]
+    volumes:
+      - ./deploy/credentials:/run/credentials
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - backend
+      - egress
+
+secrets:
+  postgres_password:
+    file: ./deploy/secrets/production/postgres_password
+  database_url:
+    file: ./deploy/secrets/production/LAOLIULIU_DATABASE_URL
+  session_pepper:
+    file: ./deploy/secrets/production/LAOLIULIU_SESSION_PEPPER
+  ai_encryption_key:
+    file: ./deploy/secrets/production/LAOLIULIU_AI_ENCRYPTION_KEY
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    internal: true
+  egress:
+  proxy:
+    external: true
+    name: ${LAOLIULIU_PROXY_NETWORK:?Set LAOLIULIU_PROXY_NETWORK}
