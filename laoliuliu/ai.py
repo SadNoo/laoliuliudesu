@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlsplit
@@ -14,6 +15,7 @@ from laoliuliu.config import Settings
 from laoliuliu.errors import AiServiceError
 
 PROMPT_VERSION = "zodiac-transition-explanation-v1"
+logger = logging.getLogger("laoliuliu.ai")
 
 
 @dataclass(frozen=True)
@@ -52,7 +54,8 @@ def request_ai_explanation(
 ) -> dict[str, Any]:
     """Ask an OpenAI-compatible endpoint to explain, not alter, the ranking."""
 
-    endpoint = f"{validate_provider_base_url(provider.base_url)}/chat/completions"
+    normalized_base_url = validate_provider_base_url(provider.base_url)
+    endpoint = f"{normalized_base_url}/chat/completions"
     source_result = analysis.to_dict()
     system_prompt = (
         "你是历史开奖数据解释助手。只解释后端已经计算完成的2026年生肖条件频率。"
@@ -80,6 +83,10 @@ def request_ai_explanation(
         "max_tokens": 800,
         "response_format": {"type": "json_object"},
     }
+    if urlsplit(normalized_base_url).hostname == "api.deepseek.com":
+        # DeepSeek V4 enables thinking by default. This short, structured explanation
+        # needs the final JSON body rather than a reasoning trace consuming the limit.
+        payload["thinking"] = {"type": "disabled"}
     timeout = httpx.Timeout(connect=10.0, read=90.0, write=10.0, pool=10.0)
     try:
         with httpx.Client(
@@ -96,6 +103,18 @@ def request_ai_explanation(
             )
         response.raise_for_status()
     except httpx.HTTPError as error:
+        response_status = (
+            error.response.status_code
+            if isinstance(error, httpx.HTTPStatusError)
+            else None
+        )
+        logger.warning(
+            "AI provider request failed host=%s model=%s status=%s error_type=%s",
+            urlsplit(normalized_base_url).hostname,
+            provider.model,
+            response_status,
+            type(error).__name__,
+        )
         raise AiServiceError(
             "AI_PROVIDER_UNAVAILABLE", "AI服务暂时不可用", 502
         ) from error
@@ -106,6 +125,13 @@ def request_ai_explanation(
         content = document["choices"][0]["message"]["content"]
         parsed = json.loads(content)
     except (ValueError, KeyError, IndexError, TypeError, json.JSONDecodeError) as error:
+        logger.warning(
+            "AI provider response invalid host=%s model=%s bytes=%s error_type=%s",
+            urlsplit(normalized_base_url).hostname,
+            provider.model,
+            len(response.content),
+            type(error).__name__,
+        )
         raise AiServiceError("AI_RESPONSE_INVALID", "AI返回格式无效", 502) from error
     return validate_ai_result(parsed)
 
