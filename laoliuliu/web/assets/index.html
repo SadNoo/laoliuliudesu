@@ -55,6 +55,7 @@
         <div><strong>老六六</strong><span>生肖数据台</span></div>
       </div>
       <nav aria-label="主要功能">
+        <button class="nav-button" type="button" data-view="ai"><span class="nav-icon">AI</span><span>AI 解读</span></button>
         <button class="nav-button active" type="button" data-view="analysis"><span class="nav-icon">析</span><span>生肖分析</span></button>
         <button class="nav-button" type="button" data-view="draws"><span class="nav-icon">期</span><span>开奖数据</span></button>
         <div id="adminNavigation" hidden>
@@ -95,30 +96,31 @@
           <div class="section-heading"><div><p class="eyebrow">TOP SIX</p><h2>下一期参考生肖</h2><p>按 2026 年历史出现次数从高到低排列。</p></div><button id="refreshAnalysisButton" type="button" class="secondary-button">刷新统计</button></div>
           <div id="topSixGrid" class="top-six-grid loading-grid"></div>
 
-          <div class="two-column-grid">
-            <section class="panel">
-              <div class="panel-heading"><div><h2>完整频率排名</h2><p>频率分母为有效样本数 × 6 个平码。</p></div></div>
-              <div class="table-wrap">
-                <table><thead><tr><th>排名</th><th>生肖</th><th>出现次数</th><th>历史频率</th></tr></thead><tbody id="rankingTableBody"></tbody></table>
-              </div>
-            </section>
+          <section class="panel">
+            <div class="panel-heading"><div><h2>完整频率排名</h2><p>频率分母为有效样本数 × 6 个平码。</p></div></div>
+            <div class="table-wrap">
+              <table><thead><tr><th>排名</th><th>生肖</th><th>出现次数</th><th>历史频率</th></tr></thead><tbody id="rankingTableBody"></tbody></table>
+            </div>
+          </section>
+          <p class="disclaimer">结果仅表示 2026 年历史条件频率，不保证未来开奖。</p>
+        </section>
 
-            <section class="panel ai-panel">
-              <div class="panel-heading"><div><h2>AI 数据解读</h2><p>AI 只能解释当前统计，不能更改前六名。</p></div><button id="runAiButton" type="button" class="primary-button">运行 AI 解读</button></div>
-              <div id="aiEmpty" class="empty-state">尚未运行本期 AI 解读。</div>
-              <div id="aiResult" hidden>
-                <p id="aiSummary" class="ai-summary"></p>
-                <ul id="aiObservations" class="observation-list"></ul>
-              </div>
-              <div id="aiMessage" class="form-message" role="status"></div>
-            </section>
-          </div>
+        <section id="aiView" class="resource-view" hidden>
+          <section class="panel ai-panel">
+            <div class="panel-heading"><div><h2>AI 数据解读</h2><p>AI 只能解释当前统计，不能更改前六名。</p></div><button id="runAiButton" type="button" class="primary-button">运行 AI 解读</button></div>
+            <div id="aiEmpty" class="empty-state">尚未运行本期 AI 解读。</div>
+            <div id="aiResult" hidden>
+              <p id="aiSummary" class="ai-summary"></p>
+              <ul id="aiObservations" class="observation-list"></ul>
+            </div>
+            <div id="aiMessage" class="form-message" role="status"></div>
+          </section>
 
           <section class="panel">
             <div class="panel-heading"><div><h2>最近 AI 记录</h2><p>仅显示当前账号发起的解读记录。</p></div></div>
             <div id="analysisRuns" class="run-list"><div class="empty-state">暂无记录。</div></div>
           </section>
-          <p class="disclaimer">结果仅表示 2026 年历史条件频率，不保证未来开奖。</p>
+          <p class="disclaimer">AI 内容只用于解释 2026 年历史统计，不保证未来开奖。</p>
         </section>
 
         <section id="drawsView" class="resource-view" hidden>

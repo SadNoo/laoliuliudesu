@@ -12,6 +12,7 @@ const state = {
 };
 
 const viewMeta = {
+  ai: ["AI INTERPRETATION", "AI 数据解读"],
   analysis: ["TRANSITION FREQUENCY", "下一期平码生肖"],
   draws: ["2026 DRAW RECORDS", "开奖数据"],
   users: ["USER AUTHORIZATION", "用户授权"],
@@ -219,6 +220,7 @@ async function loadView(name) {
   byId("viewTitle").textContent = viewMeta[name][1];
   byId("appView").classList.remove("menu-open");
   try {
+    if (name === "ai") await loadAi();
     if (name === "analysis") await loadAnalysis();
     if (name === "draws") await loadDraws();
     if (name === "users") await loadUsers();
@@ -233,10 +235,9 @@ async function loadAnalysis() {
   byId("topSixGrid").classList.add("loading-grid");
   clearChildren(byId("topSixGrid"));
   try {
-    const [analysis, runs] = await Promise.all([api("/analysis/latest"), api("/analysis/runs?limit=12")]);
+    const analysis = await api("/analysis/latest");
     state.analysis = analysis;
     renderAnalysis(analysis);
-    renderAnalysisRuns(runs.items);
   } catch (error) {
     byId("topSixGrid").classList.remove("loading-grid");
     if (error instanceof ApiError && error.code.startsWith("INSUFFICIENT")) {
@@ -248,6 +249,11 @@ async function loadAnalysis() {
     }
     throw error;
   }
+}
+
+async function loadAi() {
+  const runs = await api("/analysis/runs?limit=12");
+  renderAnalysisRuns(runs.items);
 }
 
 function renderAnalysis(analysis) {
