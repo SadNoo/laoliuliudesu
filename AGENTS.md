@@ -6,7 +6,7 @@
 approved product capabilities only:
 
 1. administrator and child-user login/authorization;
-2. 2026 draw collection from the approved 00853 endpoints;
+2. 2026 issue 048 onward draw collection from the approved 00853 endpoints;
 3. deterministic next-draw regular-zodiac transition frequency ranking;
 4. OpenAI-compatible explanation of that fixed ranking.
 
@@ -16,10 +16,10 @@ sources without explicit user approval.
 
 ## Analysis rule
 
-- Use only 2026 records.
+- Use only 2026 issue 048 onward records.
 - Read the latest special number and map it with that draw's source-provided
   zodiac anchor.
-- Find earlier 2026 draws with the same special-number zodiac.
+- Find earlier 2026 issue 048 onward draws with the same special-number zodiac.
 - Include only matches that have an immediately following draw by open time.
 - Count all six regular-zodiac occurrences in each following draw. Duplicate
   zodiacs in one draw count multiple times.

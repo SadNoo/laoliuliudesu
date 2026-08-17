@@ -469,7 +469,7 @@ async function saveProvider(event) {
 }
 
 async function runSync(kind, button) {
-  if (kind === "history" && !window.confirm("将从同源历史接口重新核对 2026 年全部记录，继续吗？")) return;
+  if (kind === "history" && !window.confirm("将从同源历史接口重新核对 2026 年第 048 期起记录，继续吗？")) return;
   setBusy(button, true, kind === "history" ? "正在核对历史…" : "正在同步…"); setMessage("syncMessage", "");
   try {
     const result = await api(`/admin/sync/${kind}`, { method: "POST", body: {} });

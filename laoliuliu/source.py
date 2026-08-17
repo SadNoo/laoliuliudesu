@@ -46,7 +46,7 @@ def parse_source_document(
     settings: Settings,
     require_history_fields: bool,
 ) -> tuple[SourceDraw, ...]:
-    """Parse the confirmed source response and return 2026 records in order."""
+    """Parse the confirmed source response and return in-scope records in order."""
 
     if not isinstance(document, Mapping):
         raise SourceError("SOURCE_SCHEMA_INVALID", "数据源返回格式无效", 502)
@@ -64,6 +64,8 @@ def parse_source_document(
         if not isinstance(issue, str) or not _ISSUE_PATTERN.fullmatch(issue):
             raise SourceError("SOURCE_RECORD_INVALID", "期号格式无效", 502)
         if not issue.startswith(str(settings.data_year)):
+            continue
+        if issue < settings.data_start_issue_id:
             continue
 
         if require_history_fields:
@@ -147,7 +149,7 @@ class SourceClient:
         self._transport = transport
 
     def fetch_history(self, as_of: date) -> SourceBatch:
-        """Fetch all available 2026 history through the approved history API."""
+        """Fetch available in-scope history through the approved history API."""
 
         url = self._settings.history_source_url
         document = self._fetch_json(

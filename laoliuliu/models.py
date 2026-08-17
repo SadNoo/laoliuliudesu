@@ -89,7 +89,7 @@ class WebSession(Base):
 
 
 class RawSourceSnapshot(Base):
-    """Immutable validated source response snapshot."""
+    """Immutable validated in-scope source response snapshot."""
 
     __tablename__ = "raw_source_snapshots"
 
@@ -109,6 +109,10 @@ class DrawRecord(Base):
     __tablename__ = "draw_records"
     __table_args__ = (
         CheckConstraint("special_number BETWEEN 1 AND 49", name="ck_draw_special"),
+        CheckConstraint(
+            "issue >= '2026048' AND issue <= '2026999'",
+            name="ck_draw_approved_issue_scope",
+        ),
         Index("ix_draw_open_time", "open_time"),
     )
 

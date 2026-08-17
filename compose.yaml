@@ -26,6 +26,7 @@ services:
       LAOLIULIU_PUBLIC_ORIGIN: ${LAOLIULIU_PUBLIC_ORIGIN:-https://lhc-api.1151156.xyz}
       LAOLIULIU_TIMEZONE: Asia/Hong_Kong
       LAOLIULIU_DATA_YEAR: "2026"
+      LAOLIULIU_DATA_START_ISSUE: "48"
     depends_on:
       postgres:
         condition: service_healthy

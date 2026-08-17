@@ -26,6 +26,9 @@
 分析排名条目包含 `number_occurrences`，其元素为 `number` 与 `occurrences`；列表按
 次数降序、相同次数按号码升序排列。
 
+开奖记录、可查询历史期号和全部分析只使用 `2026048`～`2026999`；确定性结果同时
+返回 `data_start_issue: "2026048"`。
+
 ## 管理员接口
 
 - `GET /api/v1/admin/users`

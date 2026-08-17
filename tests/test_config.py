@@ -28,3 +28,9 @@ def test_production_accepts_explicit_secure_configuration() -> None:
         public_origin="https://example.com",
     )
     assert settings.env == "production"
+    assert settings.data_start_issue_id == "2026048"
+
+
+def test_project_rejects_a_different_data_start_issue() -> None:
+    with pytest.raises(ValidationError):
+        Settings(env="test", data_start_issue=1)

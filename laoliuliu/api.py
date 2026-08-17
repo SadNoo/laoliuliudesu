@@ -183,15 +183,24 @@ def logout(
 def list_draws(
     request: Request,
     db: Db,
+    settings: RuntimeSettings,
     context: CurrentContext,
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 30,
 ) -> JSONResponse:
     require_ready(context)
-    total = db.scalar(select(func.count()).select_from(DrawRecord)) or 0
+    total = (
+        db.scalar(
+            select(func.count())
+            .select_from(DrawRecord)
+            .where(DrawRecord.issue >= settings.data_start_issue_id)
+        )
+        or 0
+    )
     rows = list(
         db.scalars(
             select(DrawRecord)
+            .where(DrawRecord.issue >= settings.data_start_issue_id)
             .order_by(DrawRecord.open_time.desc(), DrawRecord.issue.desc())
             .offset((page - 1) * page_size)
             .limit(page_size)

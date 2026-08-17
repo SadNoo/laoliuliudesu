@@ -11,6 +11,10 @@ from cryptography.fernet import Fernet
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+APPROVED_DATA_YEAR = 2026
+APPROVED_DATA_START_ISSUE = 48
+APPROVED_DATA_START_ISSUE_ID = f"{APPROVED_DATA_YEAR}{APPROVED_DATA_START_ISSUE:03d}"
+
 
 class Settings(BaseSettings):
     """Runtime settings loaded from environment variables."""
@@ -34,7 +38,8 @@ class Settings(BaseSettings):
     source_url: str = "https://api.00853lhc.com/api/opencode/2032"
     history_source_url: str = "https://api.00853lhc.com/api/HistoryOpenInfo"
     lottery_id: int = 2032
-    data_year: int = 2026
+    data_year: int = Field(default=APPROVED_DATA_YEAR, ge=2000, le=9999)
+    data_start_issue: int = Field(default=APPROVED_DATA_START_ISSUE, ge=1, le=999)
     timezone: str = "Asia/Hong_Kong"
     sync_hour: int = Field(default=21, ge=0, le=23)
     sync_minute: int = Field(default=35, ge=0, le=59)
@@ -59,6 +64,15 @@ class Settings(BaseSettings):
         if not normalized.startswith(("http://", "https://")):
             raise ValueError("public_origin must be an HTTP(S) origin")
         return normalized
+
+    @model_validator(mode="after")
+    def validate_data_scope(self) -> Settings:
+        if (
+            self.data_year != APPROVED_DATA_YEAR
+            or self.data_start_issue != APPROVED_DATA_START_ISSUE
+        ):
+            raise ValueError("project data scope must start at 2026 issue 048")
+        return self
 
     @model_validator(mode="after")
     def validate_production_secrets(self) -> Settings:
@@ -89,6 +103,12 @@ class Settings(BaseSettings):
         """Return the configured IANA timezone."""
 
         return ZoneInfo(self.timezone)
+
+    @property
+    def data_start_issue_id(self) -> str:
+        """Return the first approved seven-digit source issue identifier."""
+
+        return f"{self.data_year}{self.data_start_issue:03d}"
 
 
 @lru_cache(maxsize=1)

@@ -9,6 +9,10 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from laoliuliu.config import (
+    APPROVED_DATA_START_ISSUE_ID,
+    APPROVED_DATA_YEAR,
+)
 from laoliuliu.errors import AnalysisError
 from laoliuliu.models import DrawRecord
 from laoliuliu.zodiac import ZodiacAnimal, zodiac_for_number
@@ -69,8 +73,9 @@ class TransitionAnalysis:
             for entry in self.ranking
         ]
         return {
-            "algorithm_version": "zodiac-transition-2026-v2",
-            "data_year": 2026,
+            "algorithm_version": "zodiac-transition-2026-v3",
+            "data_year": APPROVED_DATA_YEAR,
+            "data_start_issue": APPROVED_DATA_START_ISSUE_ID,
             "latest_issue": self.latest_issue,
             "latest_regular_numbers": list(self.latest_regular_numbers),
             "latest_special_number": self.latest_special_number,
@@ -84,7 +89,7 @@ class TransitionAnalysis:
             ],
             "top_six": ranking[:6],
             "ranking": ranking,
-            "disclaimer": "结果仅表示2026年历史条件频率，不保证未来开奖。",
+            "disclaimer": "结果仅表示2026年第48期起的历史条件频率，不保证未来开奖。",
         }
 
 
@@ -126,7 +131,11 @@ def list_historical_analysis_issues(db: Session) -> list[dict[str, Any]]:
 
 def _ordered_records(db: Session) -> list[DrawRecord]:
     return list(
-        db.scalars(select(DrawRecord).order_by(DrawRecord.open_time, DrawRecord.issue))
+        db.scalars(
+            select(DrawRecord)
+            .where(DrawRecord.issue >= APPROVED_DATA_START_ISSUE_ID)
+            .order_by(DrawRecord.open_time, DrawRecord.issue)
+        )
     )
 
 
@@ -144,12 +153,12 @@ def _calculate_transition(
         )
         if target_index is None:
             raise AnalysisError(
-                "ANALYSIS_ISSUE_NOT_FOUND", "查询的2026年期号不存在", 404
+                "ANALYSIS_ISSUE_NOT_FOUND", "查询的2026年第48期起期号不存在", 404
             )
         records = records[: target_index + 1]
     if len(records) < 2:
         raise AnalysisError(
-            "INSUFFICIENT_HISTORY", "至少需要两期2026年数据才能分析", 409
+            "INSUFFICIENT_HISTORY", "至少需要两期2026年第48期起数据才能分析", 409
         )
 
     latest = records[-1]
@@ -179,7 +188,7 @@ def _calculate_transition(
     if not transitions:
         raise AnalysisError(
             "INSUFFICIENT_MATCHED_HISTORY",
-            "2026年内没有可用的同特码生肖下一期样本",
+            "2026年第48期起没有可用的同特码生肖下一期样本",
             409,
         )
 

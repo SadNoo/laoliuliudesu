@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 
@@ -61,6 +62,7 @@ def _synchronize(db: Session, batch: SourceBatch, settings: Settings) -> SyncRes
 
         latest_anchor = db.scalar(
             select(DrawRecord.zodiac_anchor)
+            .where(DrawRecord.issue >= settings.data_start_issue_id)
             .order_by(DrawRecord.open_time.desc(), DrawRecord.issue.desc())
             .limit(1)
         )
@@ -122,14 +124,24 @@ def _synchronize(db: Session, batch: SourceBatch, settings: Settings) -> SyncRes
 
 
 def _create_snapshot(batch: SourceBatch) -> RawSourceSnapshot:
+    allowed_issues = {record.issue for record in batch.records}
+    document = dict(batch.document)
+    raw_records = document.get("data")
+    if isinstance(raw_records, list):
+        document["data"] = [
+            raw_record
+            for raw_record in raw_records
+            if isinstance(raw_record, Mapping)
+            and raw_record.get("issue") in allowed_issues
+        ]
     encoded = json.dumps(
-        batch.document, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        document, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     ).encode("utf-8")
     return RawSourceSnapshot(
         source_kind=batch.source_kind,
         source_url=batch.source_url,
         content_sha256=hashlib.sha256(encoded).hexdigest(),
-        payload=batch.document,
+        payload=document,
     )
 
 

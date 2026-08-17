@@ -34,13 +34,13 @@ def test_transition_counts_every_regular_occurrence() -> None:
         )
         db.add(snapshot)
         db.flush()
-        base_time = datetime(2026, 1, 1, 13, 35, tzinfo=UTC)
+        base_time = datetime(2026, 2, 17, 13, 35, tzinfo=UTC)
         rows = [
-            ("2026001", [5, 17, 1, 2, 3, 4], 17),
-            ("2026002", [9, 10, 11, 12, 13, 14], 1),
-            ("2026003", [29, 41, 5, 17, 6, 7], 5),
-            ("2026004", [9, 16, 18, 19, 20, 21], 8),
-            ("2026005", [22, 23, 24, 25, 26, 27], 17),
+            ("2026048", [5, 17, 1, 2, 3, 4], 17),
+            ("2026049", [9, 10, 11, 12, 13, 14], 1),
+            ("2026050", [29, 41, 5, 17, 6, 7], 5),
+            ("2026051", [9, 16, 18, 19, 20, 21], 8),
+            ("2026052", [22, 23, 24, 25, 26, 27], 17),
         ]
         for index, (issue, regular, special) in enumerate(rows):
             db.add(
@@ -57,16 +57,16 @@ def test_transition_counts_every_regular_occurrence() -> None:
         db.commit()
 
         result = calculate_latest_transition(db)
-        historical = calculate_transition_for_issue(db, "2026003")
+        historical = calculate_transition_for_issue(db, "2026050")
         issues = list_historical_analysis_issues(db)
 
-    assert result.latest_issue == "2026005"
+    assert result.latest_issue == "2026052"
     assert result.latest_special_zodiac is ZodiacAnimal.TIGER
     assert result.sample_count == 2
     assert result.total_regular_occurrences == 12
     assert result.matched_transitions == (
-        ("2026001", "2026002"),
-        ("2026003", "2026004"),
+        ("2026048", "2026049"),
+        ("2026050", "2026051"),
     )
     assert len(result.ranking) == 12
     assert len(result.to_dict()["top_six"]) == 6
@@ -85,10 +85,10 @@ def test_transition_counts_every_regular_occurrence() -> None:
         {"number": 21, "occurrences": 1},
     ]
 
-    assert historical.latest_issue == "2026003"
+    assert historical.latest_issue == "2026050"
     assert historical.sample_count == 1
-    assert historical.matched_transitions == (("2026001", "2026002"),)
-    assert [item["issue"] for item in issues] == ["2026003"]
+    assert historical.matched_transitions == (("2026048", "2026049"),)
+    assert [item["issue"] for item in issues] == ["2026050"]
 
     with SessionLocal() as db:
         db.add(
@@ -113,11 +113,14 @@ def test_transition_counts_every_regular_occurrence() -> None:
         issue_response = client.get("/api/v1/analysis/history/issues")
         assert issue_response.status_code == 200
         assert [item["issue"] for item in issue_response.json()["data"]["items"]] == [
-            "2026003"
+            "2026050"
         ]
-        analysis_response = client.get("/api/v1/analysis/history/2026003")
+        analysis_response = client.get("/api/v1/analysis/history/2026050")
         assert analysis_response.status_code == 200
         assert analysis_response.json()["data"]["sample_count"] == 1
+        draws_response = client.get("/api/v1/draws?page=1&page_size=30")
+        assert draws_response.status_code == 200
+        assert draws_response.json()["data"]["total"] == 5
 
 
 def test_historical_analysis_rejects_an_unknown_issue() -> None:

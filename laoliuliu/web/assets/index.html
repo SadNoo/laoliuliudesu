@@ -19,11 +19,11 @@
       <p class="eyebrow">LAOLIULIU · 2026 DATA DESK</p>
       <h1 id="brandTitle">从历史条件中<br>看清生肖频率</h1>
       <p class="brand-copy">
-        以最新一期特码生肖为条件，查找 2026 年相同历史期数，并统计其下一期六个平码生肖。
+        以最新一期特码生肖为条件，查找 2026 年第 048 期起相同历史期数，并统计其下一期六个平码生肖。
         每一次出现都会被如实计数，排序由后端固定规则生成。
       </p>
       <dl class="principle-list">
-        <div><dt>单年范围</dt><dd>只使用 2026 年数据</dd></div>
+        <div><dt>数据范围</dt><dd>2026 年第 048 期起</dd></div>
         <div><dt>逐次计数</dt><dd>同一期重复生肖分别累计</dd></div>
         <div><dt>AI 边界</dt><dd>只解释，不修改统计排名</dd></div>
       </dl>
@@ -66,7 +66,7 @@
           <button class="nav-button" type="button" data-view="settings"><span class="nav-icon">设</span><span>数据与 AI</span></button>
         </div>
       </nav>
-      <div class="sidebar-footer"><span>DATA RANGE</span><strong><i aria-hidden="true"></i> 仅 2026 年</strong></div>
+      <div class="sidebar-footer"><span>DATA RANGE</span><strong><i aria-hidden="true"></i> 2026 · 048 起</strong></div>
     </aside>
 
     <div class="workspace">
@@ -94,7 +94,7 @@
             </div>
           </div>
 
-          <div class="section-heading"><div><p class="eyebrow">TOP SIX</p><h2>下一期参考生肖</h2><p>按 2026 年历史出现次数从高到低排列。</p></div><button id="refreshAnalysisButton" type="button" class="secondary-button">刷新统计</button></div>
+          <div class="section-heading"><div><p class="eyebrow">TOP SIX</p><h2>下一期参考生肖</h2><p>按 2026 年第 048 期起历史出现次数从高到低排列。</p></div><button id="refreshAnalysisButton" type="button" class="secondary-button">刷新统计</button></div>
           <div id="topSixGrid" class="top-six-grid loading-grid"></div>
 
           <section class="panel">
@@ -103,7 +103,7 @@
               <table><thead><tr><th>排名</th><th>生肖</th><th>号码出现次数</th><th>出现次数</th><th>历史频率</th></tr></thead><tbody id="rankingTableBody"></tbody></table>
             </div>
           </section>
-          <p class="disclaimer">结果仅表示 2026 年历史条件频率，不保证未来开奖。</p>
+          <p class="disclaimer">结果仅表示 2026 年第 048 期起历史条件频率，不保证未来开奖。</p>
         </section>
 
         <section id="aiView" class="resource-view" hidden>
@@ -121,7 +121,7 @@
             <div class="panel-heading"><div><h2>最近 AI 记录</h2><p>仅显示当前账号发起的解读记录。</p></div></div>
             <div id="analysisRuns" class="run-list"><div class="empty-state">暂无记录。</div></div>
           </section>
-          <p class="disclaimer">AI 内容只用于解释 2026 年历史统计，不保证未来开奖。</p>
+          <p class="disclaimer">AI 内容只用于解释 2026 年第 048 期起历史统计，不保证未来开奖。</p>
         </section>
 
         <section id="historyView" class="resource-view" hidden>
@@ -165,7 +165,7 @@
 
         <section id="drawsView" class="resource-view" hidden>
           <div class="metrics-grid">
-            <article class="metric-card"><span>数据年份</span><strong>2026</strong><small>不混入其他年份</small></article>
+            <article class="metric-card"><span>数据范围</span><strong>048 期起</strong><small>仅使用 2026 年</small></article>
             <article class="metric-card"><span>号码结构</span><strong>6 + 1</strong><small>六个平码与一个特码</small></article>
             <article class="metric-card accent"><span>时区</span><strong>UTC+8</strong><small>Asia/Hong_Kong</small></article>
           </div>
@@ -174,7 +174,7 @@
             <div class="table-wrap draw-table-wrap">
               <table><thead><tr><th>期号</th><th>六个平码</th><th>特码</th><th>开奖时间</th></tr></thead><tbody id="drawsTableBody"></tbody></table>
             </div>
-            <div id="drawsEmpty" class="empty-state" hidden>数据库中还没有 2026 年开奖数据。</div>
+            <div id="drawsEmpty" class="empty-state" hidden>数据库中还没有 2026 年第 048 期起开奖数据。</div>
             <div class="pagination"><button id="drawsPrevious" type="button" class="text-button">← 上一页</button><span id="drawsPage">第 1 页</span><button id="drawsNext" type="button" class="text-button">下一页 →</button></div>
           </section>
         </section>
@@ -197,7 +197,7 @@
               <div class="panel-heading"><div><h2>数据同步</h2><p>每天香港时间 21:35 自动增量更新。</p></div></div>
               <div class="sync-actions">
                 <button id="syncCurrentButton" type="button" class="primary-button">立即增量同步</button>
-                <button id="syncHistoryButton" type="button" class="secondary-button">重新核对 2026 历史</button>
+                <button id="syncHistoryButton" type="button" class="secondary-button">重新核对第 048 期起历史</button>
               </div>
               <div id="syncMessage" class="form-message" role="status"></div>
               <div id="syncRuns" class="run-list compact"><div class="empty-state">暂无同步记录。</div></div>

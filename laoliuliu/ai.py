@@ -14,7 +14,7 @@ from laoliuliu.analysis import TransitionAnalysis
 from laoliuliu.config import Settings
 from laoliuliu.errors import AiServiceError
 
-PROMPT_VERSION = "zodiac-transition-explanation-v1"
+PROMPT_VERSION = "zodiac-transition-explanation-v2"
 logger = logging.getLogger("laoliuliu.ai")
 
 
@@ -58,14 +58,15 @@ def request_ai_explanation(
     endpoint = f"{normalized_base_url}/chat/completions"
     source_result = analysis.to_dict(include_number_breakdown=False)
     system_prompt = (
-        "你是历史开奖数据解释助手。只解释后端已经计算完成的2026年生肖条件频率。"
+        "你是历史开奖数据解释助手。只解释后端已经计算完成的2026年第48期起"
+        "生肖条件频率。"
         "不得改变排名、补造样本、输出具体号码、声称能够保证命中，或引用其他分析方法。"
         "必须返回JSON对象，字段仅包含summary字符串与observations字符串数组。"
     )
     user_prompt = json.dumps(
         {
             "judgement_rule": (
-                "以最新特码生肖为条件，查找2026年内相同特码生肖的历史期数，"
+                "以最新特码生肖为条件，查找2026年第48期起相同特码生肖的历史期数，"
                 "逐次统计其下一期六个平码生肖；出现几次计算几次。"
             ),
             "deterministic_result": source_result,

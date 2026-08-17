@@ -13,6 +13,7 @@ from laoliuliu.auth import create_child_user
 from laoliuliu.config import get_settings
 from laoliuliu.db import SessionLocal
 from laoliuliu.ingestion import synchronize_current, synchronize_history
+from laoliuliu.maintenance import prune_before_approved_start
 from laoliuliu.models import User
 from laoliuliu.security import (
     generate_password,
@@ -36,6 +37,8 @@ def _parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("sync-history")
     subparsers.add_parser("sync-current")
+    prune = subparsers.add_parser("prune-before-start")
+    prune.add_argument("--confirm-start-issue", required=True)
     return parser
 
 
@@ -52,6 +55,14 @@ def entrypoint() -> None:
         return
 
     settings = get_settings()
+    if args.command == "prune-before-start":
+        if args.confirm_start_issue != settings.data_start_issue_id:
+            raise SystemExit(f"confirmation must equal {settings.data_start_issue_id}")
+        with SessionLocal() as db:
+            prune_result = prune_before_approved_start(db)
+        print(json.dumps(prune_result.__dict__, ensure_ascii=False, sort_keys=True))
+        return
+
     client = SourceClient(settings)
     with SessionLocal() as db:
         result = (
