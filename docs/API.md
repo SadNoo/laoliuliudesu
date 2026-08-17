@@ -17,6 +17,7 @@
 - `GET /api/v1/analysis/latest`
 - `GET /api/v1/analysis/history/issues`：返回可查询的历史期号。
 - `GET /api/v1/analysis/history/{issue}`：按该期数据截止点重算确定性分析。
+- `GET /api/v1/analysis/combinations/latest`：返回前十号码和十组 3 中 3 参考组合。
 - `POST /api/v1/analysis/ai`
 - `GET /api/v1/analysis/runs`
 
@@ -28,6 +29,10 @@
 
 开奖记录、可查询历史期号和全部分析只使用 `2026048`～`2026999`；确定性结果同时
 返回 `data_start_issue: "2026048"`。
+
+组合响应包含此前 20 期起止期号、历史前六生肖、10 个 `candidates` 和 10 个
+`combinations`。单号与组合均分别返回历史次数、近 20 期次数和综合分；统计只使用
+平码，最新一期及所有特码不进入近 20 期计数。
 
 ## 管理员接口
 

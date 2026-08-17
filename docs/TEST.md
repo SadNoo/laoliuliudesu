@@ -9,6 +9,7 @@
 - 历史期号计算的数据截止边界和未知期号错误。
 - 数据源 6+1、期号、时间、范围、唯一性和 `pet` 验证。
 - 第 048 期采集下限、数据库约束及第 001～047 期物理清理。
+- 前十号码交集、综合分并列顺序、三号码组合排序、20 期不足和候选不足边界。
 - 历史回填幂等性与冲突关闭。
 - Argon2id 登录、首次改密、Opaque Session 和 CSRF。
 - 管理员创建/停用子用户及角色门禁。
@@ -37,7 +38,7 @@ git diff --check
 ## 当前结果
 
 - Black、Ruff、严格 MyPy、JavaScript 语法和 Git 空白检查：通过。
-- Pytest：16 项通过，0 项失败；存在 1 条来自 FastAPI/Starlette TestClient 的上游
+- Pytest：20 项通过，0 项失败；存在 1 条来自 FastAPI/Starlette TestClient 的上游
   弃用警告，不影响运行路径。
 - SQLite 迁移检查完成 `0001_initial` → `0002_draw_issue_scope`、回退和再升级；
   `alembic check` 无 schema 漂移。生产 PostgreSQL 17 已升级到相同 head。

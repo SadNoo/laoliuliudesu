@@ -2,17 +2,18 @@
 
 ## Project boundary
 
-`laoliuliu` is a private Web application for 2026 Macau draw data. It has four
+`laoliuliu` is a private Web application for 2026 Macau draw data. It has five
 approved product capabilities only:
 
 1. administrator and child-user login/authorization;
 2. 2026 issue 048 onward draw collection from the approved 00853 endpoints;
 3. deterministic next-draw regular-zodiac transition frequency ranking;
-4. OpenAI-compatible explanation of that fixed ranking.
+4. OpenAI-compatible explanation of that fixed ranking;
+5. deterministic top-ten number comparison and ten 3-of-3 reference groups.
 
-Do not add Windows-client code, License/device binding, number prediction,
-generic scoring, combination generation, exports, payment, or additional data
-sources without explicit user approval.
+Do not add Windows-client code, License/device binding, other number prediction
+or scoring methods, other combination generation, exports, payment, or additional
+data sources without explicit user approval.
 
 ## Analysis rule
 
@@ -28,6 +29,20 @@ sources without explicit user approval.
 - AI may explain the deterministic result but may not change it.
 
 Never describe empirical history frequency as guaranteed prediction accuracy.
+
+## Number combination rule
+
+- Start from the number occurrences inside the complete zodiac ranking's first
+  six zodiacs for the latest issue.
+- Count only the six regular numbers in each of the 20 draws immediately before
+  the latest issue; exclude the latest issue and every special number.
+- Keep numbers present in both sets. Rank by historical occurrences plus recent
+  occurrences descending, then historical occurrences descending, recent
+  occurrences descending, and number ascending. Keep ten numbers.
+- Generate all unique three-number groups from those ten. Rank by summed score,
+  summed historical occurrences, summed recent occurrences, then ascending number
+  tuple. Return ten groups.
+- These are historical reference groups, not guaranteed 3-of-3 predictions.
 
 ## Engineering rules
 

@@ -35,6 +35,7 @@ from laoliuliu.auth import (
     set_child_user_status,
     verify_csrf,
 )
+from laoliuliu.combinations import calculate_latest_number_combinations
 from laoliuliu.config import Settings, get_settings
 from laoliuliu.db import get_db
 from laoliuliu.errors import AiServiceError, AppError, AuthorizationError
@@ -238,6 +239,14 @@ def historical_analysis_issues(
 ) -> JSONResponse:
     require_ready(context)
     return _success({"items": list_historical_analysis_issues(db)}, request)
+
+
+@API_ROUTER.get("/analysis/combinations/latest")
+def latest_number_combinations(
+    request: Request, db: Db, context: CurrentContext
+) -> JSONResponse:
+    require_ready(context)
+    return _success(calculate_latest_number_combinations(db).to_dict(), request)
 
 
 @API_ROUTER.get("/analysis/history/{issue}")
