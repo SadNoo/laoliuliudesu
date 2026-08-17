@@ -15,6 +15,7 @@ const viewMeta = {
   ai: ["AI INTERPRETATION", "AI 数据解读"],
   analysis: ["TRANSITION FREQUENCY", "下一期平码生肖"],
   history: ["HISTORICAL ANALYSIS", "历史分析查询"],
+  combinations: ["TOP TEN · 3 OF 3", "3中3号码组合"],
   draws: ["2026 DRAW RECORDS", "开奖数据"],
   users: ["USER AUTHORIZATION", "用户授权"],
   settings: ["DATA & AI SETTINGS", "数据与 AI"],
@@ -224,6 +225,7 @@ async function loadView(name) {
     if (name === "ai") await loadAi();
     if (name === "analysis") await loadAnalysis();
     if (name === "history") await loadHistory();
+    if (name === "combinations") await loadCombinations();
     if (name === "draws") await loadDraws();
     if (name === "users") await loadUsers();
     if (name === "settings") await loadSettings();
@@ -348,6 +350,86 @@ async function queryHistoricalAnalysis(event) {
   } finally {
     setBusy(button, false, "");
   }
+}
+
+async function loadCombinations() {
+  const empty = byId("combinationsEmpty");
+  const result = byId("combinationsResult");
+  empty.hidden = false;
+  empty.textContent = "正在生成最新号码对比与组合…";
+  result.hidden = true;
+  try {
+    const analysis = await api("/analysis/combinations/latest");
+    renderCombinations(analysis);
+    empty.hidden = true;
+    result.hidden = false;
+  } catch (error) {
+    if (error instanceof ApiError && error.code.startsWith("INSUFFICIENT")) {
+      empty.textContent = error.message;
+      return;
+    }
+    throw error;
+  }
+}
+
+function renderCombinations(analysis) {
+  byId("combinationLatestIssue").textContent = analysis.latest_issue;
+  byId("combinationRecentRange").textContent = `${analysis.recent_issue_start} ～ ${analysis.recent_issue_end}`;
+  byId("combinationSampleCount").textContent = analysis.transition_sample_count;
+
+  const candidateBody = byId("combinationCandidatesBody");
+  clearChildren(candidateBody);
+  analysis.candidates.forEach((candidate) => {
+    const row = document.createElement("tr");
+    const rankCell = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = "rank-badge";
+    badge.textContent = candidate.rank;
+    rankCell.appendChild(badge);
+    const numberCell = document.createElement("td");
+    const number = document.createElement("span");
+    number.className = "number-ball combination-number";
+    number.textContent = String(candidate.number).padStart(2, "0");
+    numberCell.appendChild(number);
+    row.append(
+      rankCell,
+      numberCell,
+      textCell(candidate.zodiac_labels.join(" / ")),
+      textCell(`${candidate.historical_occurrences} 次`),
+      textCell(`${candidate.recent_occurrences} 次`),
+      textCell(candidate.combined_score),
+    );
+    candidateBody.appendChild(row);
+  });
+
+  const combinationBody = byId("threeNumberCombinationsBody");
+  clearChildren(combinationBody);
+  analysis.combinations.forEach((combination) => {
+    const row = document.createElement("tr");
+    const rankCell = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = "rank-badge";
+    badge.textContent = combination.rank;
+    rankCell.appendChild(badge);
+    const numbersCell = document.createElement("td");
+    const numbers = document.createElement("div");
+    numbers.className = "number-row combination-number-row";
+    combination.numbers.forEach((value) => {
+      const ball = document.createElement("span");
+      ball.className = "number-ball combination-number";
+      ball.textContent = String(value).padStart(2, "0");
+      numbers.appendChild(ball);
+    });
+    numbersCell.appendChild(numbers);
+    row.append(
+      rankCell,
+      numbersCell,
+      textCell(`${combination.historical_occurrences} 次`),
+      textCell(`${combination.recent_occurrences} 次`),
+      textCell(combination.combined_score),
+    );
+    combinationBody.appendChild(row);
+  });
 }
 
 function renderAnalysisRuns(items) {
@@ -504,6 +586,7 @@ function bindEvents() {
   byId("menuButton").addEventListener("click", () => byId("appView").classList.toggle("menu-open"));
   byId("refreshAnalysisButton").addEventListener("click", loadAnalysis);
   byId("historyAnalysisForm").addEventListener("submit", queryHistoricalAnalysis);
+  byId("refreshCombinationsButton").addEventListener("click", loadCombinations);
   byId("runAiButton").addEventListener("click", runAi);
   byId("drawsPrevious").addEventListener("click", async () => { if (state.drawPage > 1) { state.drawPage -= 1; await loadDraws(); } });
   byId("drawsNext").addEventListener("click", async () => { state.drawPage += 1; await loadDraws(); });

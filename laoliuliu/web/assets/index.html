@@ -58,6 +58,7 @@
         <button class="nav-button" type="button" data-view="ai"><span class="nav-icon">AI</span><span>AI 解读</span></button>
         <button class="nav-button active" type="button" data-view="analysis"><span class="nav-icon">析</span><span>生肖分析</span></button>
         <button class="nav-button" type="button" data-view="history"><span class="nav-icon">史</span><span>历史分析</span></button>
+        <button class="nav-button" type="button" data-view="combinations"><span class="nav-icon">组</span><span>3中3组合</span></button>
         <button class="nav-button" type="button" data-view="draws"><span class="nav-icon">期</span><span>开奖数据</span></button>
         <div id="adminNavigation" hidden>
           <div class="nav-divider"></div>
@@ -160,6 +161,41 @@
               </div>
             </section>
             <p class="disclaimer">历史分析严格按所选期号的数据截止点重算，不代表未来结果。</p>
+          </div>
+        </section>
+
+        <section id="combinationsView" class="resource-view" hidden>
+          <div id="combinationsEmpty" class="empty-state">正在生成最新号码对比与组合…</div>
+          <div id="combinationsResult" class="combination-result" hidden>
+            <div class="analysis-hero panel">
+              <div>
+                <p class="eyebrow">TOP TEN · 3 OF 3</p>
+                <h2>第 <span id="combinationLatestIssue">—</span> 期参考</h2>
+                <p class="hero-copy">近20期范围 <strong id="combinationRecentRange">—</strong></p>
+              </div>
+              <div class="hero-metrics">
+                <article><span>历史转移样本</span><strong id="combinationSampleCount">—</strong><small>沿用最新生肖完整排名</small></article>
+                <article><span>候选与组合</span><strong>10 / 10</strong><small>10个号码 · 10组三号码</small></article>
+              </div>
+            </div>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div><h2>筛选后的前十号码</h2><p>历史前六生肖号码与当期之前20期热门平码取交集，按历史次数＋近20期次数排序。</p></div>
+                <button id="refreshCombinationsButton" type="button" class="secondary-button">刷新组合</button>
+              </div>
+              <div class="table-wrap">
+                <table><thead><tr><th>排名</th><th>号码</th><th>所属生肖</th><th>历史分析次数</th><th>近20期次数</th><th>综合分</th></tr></thead><tbody id="combinationCandidatesBody"></tbody></table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading"><div><h2>十组3中3参考组合</h2><p>从前十号码的全部三号码组合中，按组合总分从高到低取前十组。</p></div></div>
+              <div class="table-wrap">
+                <table><thead><tr><th>排名</th><th>三个号码</th><th>历史次数合计</th><th>近20期次数合计</th><th>组合总分</th></tr></thead><tbody id="threeNumberCombinationsBody"></tbody></table>
+              </div>
+            </section>
+            <p class="disclaimer">组合仅为历史数据筛选结果，不保证未来开奖或3中3。</p>
           </div>
         </section>
 
